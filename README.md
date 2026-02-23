@@ -1,36 +1,72 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# INTCONVERGE COMMUNICATION Website
 
-## Getting Started
+Production-ready ISP website built with Next.js 14, Tailwind CSS, Prisma, SQLite, and Nodemailer. Includes public pages, lead capture forms, and an admin console for managing plans, coverage areas, and advisories.
 
-First, run the development server:
+## Tech Stack
+- Next.js 14 (App Router) + TypeScript
+- Tailwind CSS
+- SQLite + Prisma (switchable to Postgres)
+- Nodemailer (SMTP notifications)
 
+## Setup
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Environment
+Copy `.env.example` to `.env` and update values:
+```bash
+cp .env.example .env
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Required values:
+- `DATABASE_URL` (default: file:./dev.db)
+- `AUTH_SECRET` (long random string)
+- `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_NAME`
+- SMTP settings for lead notifications
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Database & Seed
+```bash
+npx prisma migrate dev --name init
+npm run seed
+```
 
-## Learn More
+### Run
+```bash
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Admin Console
+- Login: `/admin/login`
+- Manage leads, plans, coverage, and announcements.
+- Update business info in `src/config/site.ts` (read-only in admin settings page).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Updating Content
+- **Plans**: Admin > Plans
+- **Coverage Areas**: Admin > Coverage
+- **Advisories/Promos**: Admin > Announcements
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Deployment
+### VPS (SQLite)
+- Keep `DATABASE_PROVIDER=sqlite` and `DATABASE_URL=file:./dev.db`.
+- Persist the database file and `data/uploads` directory.
 
-## Deploy on Vercel
+### Cloud (Postgres)
+- Update `provider` in `prisma/schema.prisma` to `postgresql`.
+- Set `DATABASE_URL` to your Postgres connection string.
+- Run `npx prisma migrate deploy` on release.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Offline builds (optional)
+If the build environment cannot access Google Fonts, run:
+```bash
+NEXT_DISABLE_FONT_DOWNLOAD=1 npm run build
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Backups
+- Back up the SQLite database file (`dev.db`) or Postgres snapshots.
+- Back up `/data/uploads` for stored proof-of-address images.
+
+## Notes
+- Forms include honeypot and basic rate limiting.
+- Uploaded images are stored in `/data/uploads` and referenced in the database.
+

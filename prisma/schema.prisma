@@ -1,0 +1,94 @@
+// Prisma schema for EVECS Digital Network Inc.
+// Switch DB by changing DATABASE_PROVIDER and DATABASE_URL.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Lead {
+  id                 String       @id @default(cuid())
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+  type               String
+  fullName           String
+  mobile             String
+  email              String?
+  addressLine        String
+  barangay           String
+  municipality       String
+  province           String       @default("Eastern Samar")
+  coordinatesLat     Float?
+  coordinatesLng     Float?
+  preferredSchedule  String?
+  planInterestId     String?
+  notes              String?
+  status             String       @default("NEW")
+  internalNotes      String?
+  attachments        Attachment[]
+  planInterest       Plan?        @relation(fields: [planInterestId], references: [id])
+}
+
+model Attachment {
+  id        String   @id @default(cuid())
+  leadId    String
+  fileName  String
+  filePath  String
+  mimeType  String
+  size      Int
+  createdAt DateTime @default(now())
+
+  lead Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+}
+
+model Plan {
+  id             String   @id @default(cuid())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  name           String
+  slug           String   @unique
+  speedMbps      Int
+  pricePhp       Int
+  contractMonths Int
+  installFeePhp  Int?
+  promoText      String?
+  isFeatured     Boolean  @default(false)
+  features       String   @default("[]")
+  leads          Lead[]
+}
+
+model CoverageArea {
+  id           String         @id @default(cuid())
+  municipality String
+  barangay     String
+  status       String
+  notes        String?
+
+  @@unique([municipality, barangay])
+}
+
+model Announcement {
+  id          String               @id @default(cuid())
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+  title       String
+  slug        String               @unique
+  category    String
+  content     String
+  isPublished Boolean              @default(false)
+  publishedAt DateTime?
+}
+
+model AdminUser {
+  id           String   @id @default(cuid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  name         String
+  email        String   @unique
+  passwordHash String
+}
+
