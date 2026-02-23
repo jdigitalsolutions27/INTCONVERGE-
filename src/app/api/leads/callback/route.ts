@@ -28,23 +28,31 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
 
-  await prisma.lead.create({
-    data: {
-      type: "CALLBACK",
-      fullName,
-      mobile,
-      email: null,
-      municipality: municipality || "-",
-      barangay: barangay || "-",
-      addressLine: "-",
-      notes: "Request callback from coverage checker.",
-    },
-  });
+  try {
+    await prisma.lead.create({
+      data: {
+        type: "CALLBACK",
+        fullName,
+        mobile,
+        email: null,
+        municipality: municipality || "-",
+        barangay: barangay || "-",
+        addressLine: "-",
+        notes: "Request callback from coverage checker.",
+      },
+    });
+  } catch (error) {
+    console.error("[lead-callback] Failed to save lead", error);
+  }
 
-  await sendLeadNotification(
-    `Callback Request: ${fullName}`,
-    `<p>Callback request from ${fullName}</p><p>Mobile: ${mobile}</p><p>Location: ${barangay}, ${municipality}</p>`
-  );
+  try {
+    await sendLeadNotification(
+      `Callback Request: ${fullName}`,
+      `<p>Callback request from ${fullName}</p><p>Mobile: ${mobile}</p><p>Location: ${barangay}, ${municipality}</p>`
+    );
+  } catch (error) {
+    console.error("[lead-callback] Failed to send notification", error);
+  }
 
   return NextResponse.redirect(new URL("/coverage?callback=1", request.url));
 }

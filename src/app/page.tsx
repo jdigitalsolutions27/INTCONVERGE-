@@ -1,30 +1,16 @@
 import { Container } from "@/components/container";
 import { Button } from "@/components/button";
 import { siteConfig } from "@/config/site";
-import { prisma } from "@/lib/db";
 import { formatPhp } from "@/lib/format";
 import { idealForSpeed, normalizeFeatures } from "@/lib/plans";
+import { getAnnouncements, getFeaturedPlans, getPromos } from "@/lib/public-data";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const featuredPlans = await prisma.plan.findMany({
-    where: { isFeatured: true },
-    orderBy: { pricePhp: "asc" },
-    take: 3,
-  });
-
-  const announcements = await prisma.announcement.findMany({
-    where: { isPublished: true },
-    orderBy: { publishedAt: "desc" },
-    take: 3,
-  });
-
-  const promos = await prisma.announcement.findMany({
-    where: { isPublished: true, category: "PROMO" },
-    orderBy: { publishedAt: "desc" },
-    take: 2,
-  });
+  const featuredPlans = await getFeaturedPlans(3);
+  const announcements = await getAnnouncements(3);
+  const promos = await getPromos(2);
 
   const jsonLd = {
     "@context": "https://schema.org",

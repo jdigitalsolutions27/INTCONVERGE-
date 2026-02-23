@@ -1,7 +1,7 @@
 import { Container } from "@/components/container";
 import { ApplyForm } from "@/components/apply-form";
-import { prisma } from "@/lib/db";
 import { siteConfig } from "@/config/site";
+import { getPlans } from "@/lib/public-data";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +11,7 @@ export const metadata = {
 };
 
 export default async function ApplyPage() {
-  const plans = await prisma.plan.findMany({ orderBy: { pricePhp: "asc" } });
+  const plans = await getPlans();
 
   return (
     <Container>

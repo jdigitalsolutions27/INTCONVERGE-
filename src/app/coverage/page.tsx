@@ -2,7 +2,7 @@ import { Container } from "@/components/container";
 import { CoverageChecker } from "@/components/coverage-checker";
 import { Button } from "@/components/button";
 import { siteConfig } from "@/config/site";
-import { prisma } from "@/lib/db";
+import { getCoverageAreas } from "@/lib/public-data";
 
 export const dynamic = "force-dynamic";
 
@@ -17,10 +17,7 @@ export const metadata = {
 
 export default async function CoveragePage({ searchParams }: PageProps) {
   const callbackSent = searchParams?.callback === "1";
-  const areas = await prisma.coverageArea.findMany({
-    select: { municipality: true, barangay: true, status: true },
-    orderBy: [{ municipality: "asc" }, { barangay: "asc" }],
-  });
+  const areas = await getCoverageAreas();
 
   return (
     <Container>

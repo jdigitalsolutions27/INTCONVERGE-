@@ -1,8 +1,8 @@
 import { Container } from "@/components/container";
 import { Button } from "@/components/button";
-import { prisma } from "@/lib/db";
 import { formatPhp } from "@/lib/format";
 import { idealForSpeed, normalizeFeatures } from "@/lib/plans";
+import { getPlans } from "@/lib/public-data";
 
 export const dynamic = "force-dynamic";
 
@@ -12,9 +12,7 @@ export const metadata = {
 };
 
 export default async function PlansPage() {
-  const plans = await prisma.plan.findMany({
-    orderBy: [{ pricePhp: "asc" }],
-  });
+  const plans = await getPlans();
 
   return (
     <Container>

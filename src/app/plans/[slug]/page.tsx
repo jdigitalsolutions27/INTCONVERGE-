@@ -2,9 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Container } from "@/components/container";
 import { Button } from "@/components/button";
-import { prisma } from "@/lib/db";
 import { formatPhp } from "@/lib/format";
 import { idealForSpeed, normalizeFeatures } from "@/lib/plans";
+import { getPlanBySlug } from "@/lib/public-data";
 
 export const dynamic = "force-dynamic";
 
@@ -13,9 +13,7 @@ type PageProps = {
 };
 
 export async function generateMetadata({ params }: PageProps) {
-  const plan = await prisma.plan.findUnique({
-    where: { slug: params.slug },
-  });
+  const plan = await getPlanBySlug(params.slug);
 
   if (!plan) {
     return { title: "Plan Not Found" };
@@ -31,9 +29,7 @@ export async function generateMetadata({ params }: PageProps) {
 }
 
 export default async function PlanDetailPage({ params }: PageProps) {
-  const plan = await prisma.plan.findUnique({
-    where: { slug: params.slug },
-  });
+  const plan = await getPlanBySlug(params.slug);
 
   if (!plan) {
     notFound();

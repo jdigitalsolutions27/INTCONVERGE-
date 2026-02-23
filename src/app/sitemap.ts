@@ -1,9 +1,9 @@
-import { prisma } from "@/lib/db";
 import { seoConfig } from "@/config/site";
+import { getSitemapPlanEntries } from "@/lib/public-data";
 
 export default async function sitemap() {
   const baseUrl = seoConfig.baseUrl;
-  const plans = await prisma.plan.findMany({ select: { slug: true, updatedAt: true } });
+  const plans = await getSitemapPlanEntries();
 
   const staticRoutes = [
     "",

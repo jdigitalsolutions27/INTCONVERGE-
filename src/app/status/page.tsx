@@ -1,5 +1,5 @@
 import { Container } from "@/components/container";
-import { prisma } from "@/lib/db";
+import { getAnnouncements } from "@/lib/public-data";
 
 export const dynamic = "force-dynamic";
 
@@ -9,10 +9,7 @@ export const metadata = {
 };
 
 export default async function StatusPage() {
-  const announcements = await prisma.announcement.findMany({
-    where: { isPublished: true },
-    orderBy: { publishedAt: "desc" },
-  });
+  const announcements = await getAnnouncements();
 
   return (
     <Container>

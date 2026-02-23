@@ -27,23 +27,31 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
 
-  await prisma.lead.create({
-    data: {
-      type: "CONTACT",
-      fullName,
-      mobile,
-      email: null,
-      municipality: "-",
-      barangay: "-",
-      addressLine: "-",
-      notes,
-    },
-  });
+  try {
+    await prisma.lead.create({
+      data: {
+        type: "CONTACT",
+        fullName,
+        mobile,
+        email: null,
+        municipality: "-",
+        barangay: "-",
+        addressLine: "-",
+        notes,
+      },
+    });
+  } catch (error) {
+    console.error("[lead-contact] Failed to save lead", error);
+  }
 
-  await sendLeadNotification(
-    `New Contact: ${fullName}`,
-    `<p>New contact from ${fullName}</p><p>Mobile: ${mobile}</p><p>Message: ${notes}</p>`
-  );
+  try {
+    await sendLeadNotification(
+      `New Contact: ${fullName}`,
+      `<p>New contact from ${fullName}</p><p>Mobile: ${mobile}</p><p>Message: ${notes}</p>`
+    );
+  } catch (error) {
+    console.error("[lead-contact] Failed to send notification", error);
+  }
 
   return NextResponse.redirect(new URL("/contact?sent=1", request.url));
 }

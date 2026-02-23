@@ -46,40 +46,55 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
 
-  const lead = await prisma.lead.create({
-    data: {
-      type: "APPLY",
-      fullName,
-      mobile,
-      email: email || null,
-      municipality,
-      barangay,
-      addressLine,
-      notes: notes || null,
-      preferredSchedule: preferredSchedule || null,
-      planInterestId: planInterestId || null,
-    },
-  });
+  let leadId: string | null = null;
 
-  if (attachments.length > 0) {
-    const saved = await saveUploads(attachments, lead.id);
-    for (const file of saved) {
-      await prisma.attachment.create({
-        data: {
-          leadId: lead.id,
-          fileName: file.fileName,
-          filePath: file.filePath,
-          mimeType: file.mimeType,
-          size: file.size,
-        },
-      });
+  try {
+    const lead = await prisma.lead.create({
+      data: {
+        type: "APPLY",
+        fullName,
+        mobile,
+        email: email || null,
+        municipality,
+        barangay,
+        addressLine,
+        notes: notes || null,
+        preferredSchedule: preferredSchedule || null,
+        planInterestId: planInterestId || null,
+      },
+    });
+    leadId = lead.id;
+  } catch (error) {
+    console.error("[lead-apply] Failed to save lead", error);
+  }
+
+  if (attachments.length > 0 && leadId) {
+    try {
+      const saved = await saveUploads(attachments, leadId);
+      for (const file of saved) {
+        await prisma.attachment.create({
+          data: {
+            leadId,
+            fileName: file.fileName,
+            filePath: file.filePath,
+            mimeType: file.mimeType,
+            size: file.size,
+          },
+        });
+      }
+    } catch (error) {
+      console.error("[lead-apply] Failed to save attachments", error);
     }
   }
 
-  await sendLeadNotification(
-    `New Application: ${fullName}`,
-    `<p>New application from ${fullName}</p><p>Mobile: ${mobile}</p><p>Address: ${addressLine}, ${barangay}, ${municipality}</p>`
-  );
+  try {
+    await sendLeadNotification(
+      `New Application: ${fullName}`,
+      `<p>New application from ${fullName}</p><p>Mobile: ${mobile}</p><p>Address: ${addressLine}, ${barangay}, ${municipality}</p>`
+    );
+  } catch (error) {
+    console.error("[lead-apply] Failed to send notification", error);
+  }
 
   return NextResponse.redirect(new URL("/apply/success", request.url));
 }

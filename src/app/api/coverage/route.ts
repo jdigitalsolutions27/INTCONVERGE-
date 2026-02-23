@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { findCoverageArea } from "@/lib/public-data";
 
 export const runtime = "nodejs";
 
@@ -12,12 +12,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ status: "NOT_YET", notes: "Please provide municipality and barangay." });
   }
 
-  const area = await prisma.coverageArea.findFirst({
-    where: {
-      municipality,
-      barangay,
-    },
-  });
+  const area = await findCoverageArea(municipality, barangay);
 
   if (!area) {
     return NextResponse.json({ status: "NOT_YET", notes: "We are expanding soon. Join the waitlist." });
